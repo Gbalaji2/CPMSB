@@ -1,4 +1,14 @@
 // server.js
+// ----------------- GLOBAL ERROR LISTENERS -----------------
+process.on("uncaughtException", (err) => {
+  console.error("UNCAUGHT EXCEPTION:", err.stack);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("UNHANDLED REJECTION:", reason.stack || reason);
+});
+
+// ----------------- CONFIG & MODULES -----------------
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -13,8 +23,8 @@ import { setupSwagger } from "./utils/swagger.js";
 
 import jwt from "jsonwebtoken";
 import User from "./models/User.js";
-import bcrypt from "bcryptjs";
 
+// Connect to MongoDB
 connectDB();
 
 // --- Create default admin if not exists ---
@@ -23,28 +33,29 @@ async function createDefaultAdmin() {
     const adminExists = await User.findOne({ email: process.env.ADMIN_EMAIL });
     if (adminExists) return console.log("Admin already exists");
 
-    const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
-
+    // Create admin instance
     const admin = new User({
       name: "College Admin",
       email: process.env.ADMIN_EMAIL,
-      password: hashedPassword,
+      password: process.env.ADMIN_PASSWORD, // will be hashed via pre-save hook
       role: "admin",
+      isActive: true,
     });
 
-    await admin.save();
+    await admin.save(); // triggers pre-save hook
     console.log("Default admin created!");
   } catch (err) {
     console.error("Error creating default admin:", err.message);
   }
 }
 
-createDefaultAdmin(); // Run on startup
+// Call directly, no asyncHandler
+createDefaultAdmin();
 
 const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 
-/* Socket.io */
+/* Socket.io setup */
 export const io = new Server(server, {
   cors: {
     origin: ["http://localhost:5173"],
@@ -54,7 +65,7 @@ export const io = new Server(server, {
 
 initSocket(io);
 
-/* Rooms: user_<id> and role_<role> */
+/* Socket.io connection: rooms by user ID and role */
 io.on("connection", async (socket) => {
   try {
     const token = socket.handshake.auth?.token;
@@ -80,4 +91,5 @@ setupSwagger(app);
 /* Cron Jobs */
 startInterviewReminderCron();
 
+/* Start server */
 server.listen(PORT, () => console.log(`Server running on ${PORT}`));

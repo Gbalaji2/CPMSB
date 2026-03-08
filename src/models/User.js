@@ -4,43 +4,24 @@ import bcrypt from "bcryptjs";
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true, maxlength: 60 },
-
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-      index: true,
-    },
-
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
     password: { type: String, required: true, minlength: 6 },
-
-    role: {
-      type: String,
-      enum: ["student", "company", "admin", "tpo"],
-      default: "student",
-      index: true,
-    },
-
+    role: { type: String, enum: ["student","company","admin","tpo"], default: "student", index: true },
     isActive: { type: Boolean, default: true },
-
-    // for refresh token rotation (optional but good)
-    refreshToken: { type: String, default: null },
+    refreshToken: { type: String, default: null }
   },
   { timestamps: true }
 );
 
-/* Hash password */
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+// ✅ HASH PASSWORD WITHOUT next()
+userSchema.pre("save", async function() {
+  if (!this.isModified("password")) return;
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  next();
 });
 
-/* Compare password */
-userSchema.methods.matchPassword = async function (enteredPassword) {
+// ✅ Compare password
+userSchema.methods.matchPassword = async function(enteredPassword) {
   return bcrypt.compare(enteredPassword, this.password);
 };
 
