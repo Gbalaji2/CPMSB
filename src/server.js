@@ -13,14 +13,39 @@ import { setupSwagger } from "./utils/swagger.js";
 
 import jwt from "jsonwebtoken";
 import User from "./models/User.js";
+import bcrypt from "bcryptjs";
 
 connectDB();
+
+// --- Create default admin if not exists ---
+async function createDefaultAdmin() {
+  try {
+    const adminExists = await User.findOne({ email: process.env.ADMIN_EMAIL });
+    if (adminExists) return console.log("Admin already exists");
+
+    const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
+
+    const admin = new User({
+      name: "College Admin",
+      email: process.env.ADMIN_EMAIL,
+      password: hashedPassword,
+      role: "admin",
+    });
+
+    await admin.save();
+    console.log("Default admin created!");
+  } catch (err) {
+    console.error("Error creating default admin:", err.message);
+  }
+}
+
+createDefaultAdmin(); // Run on startup
 
 const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 
 /* Socket.io */
-export const io = new Server(server, {  // <-- export here
+export const io = new Server(server, {
   cors: {
     origin: ["http://localhost:5173"],
     credentials: true,

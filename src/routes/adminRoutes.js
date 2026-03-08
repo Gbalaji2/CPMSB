@@ -13,31 +13,18 @@ import {
 
 const router = express.Router();
 
-router.get("/overview", protect, allowRoles("admin", "tpo"), getAdminOverview);
+// Apply middlewares to all routes in this router
+router.use(protect);                // User must be logged in
+router.use(allowRoles("admin", "tpo")); // User must have admin or TPO role
 
-router.get("/students", protect, allowRoles("admin", "tpo"), listStudents);
+// Admin-only routes
+router.get("/overview", getAdminOverview);
+router.get("/students", listStudents);
+router.get("/companies", listCompanies);
 
-router.get("/companies", protect, allowRoles("admin", "tpo"), listCompanies);
+router.patch("/companies/:companyId/verify", verifyCompany);
+router.patch("/users/:userId/block", toggleBlockUser);
 
-router.patch(
-  "/companies/:companyId/verify",
-  protect,
-  allowRoles("admin", "tpo"),
-  verifyCompany
-);
-
-router.patch(
-  "/users/:userId/block",
-  protect,
-  allowRoles("admin", "tpo"),
-  toggleBlockUser
-);
-
-router.delete(
-  "/jobs/:jobId",
-  protect,
-  allowRoles("admin", "tpo"),
-  deleteJobByAdmin
-);
+router.delete("/jobs/:jobId", deleteJobByAdmin);
 
 export default router;
