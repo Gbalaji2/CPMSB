@@ -21,6 +21,6 @@ router.get("/refresh", refreshAccessToken);
 
 router.post("/logout", logout);
 
-router.get("/me", protect, getMe);
+router.get("/my", protect, getMe);
 
 export default router;

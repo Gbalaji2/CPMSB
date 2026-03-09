@@ -19,7 +19,7 @@ router.post(
   applyJob
 );
 
-router.get("/me", protect, allowRoles("student"), getMyApplications);
+router.get("/my", protect, allowRoles("student"), getMyApplications);
 
 /* COMPANY */
 router.get(

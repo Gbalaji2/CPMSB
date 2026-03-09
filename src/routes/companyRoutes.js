@@ -17,11 +17,11 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.use(protect, allowRoles("company"));
 
-router.get("/me/profile", getMyCompanyProfile);
-router.put("/me/profile", updateMyCompanyProfile);
+router.get("/companies/my/profile", getMyCompanyProfile);
+router.put("/companies/my/profile", updateMyCompanyProfile);
 
-router.post("/me/logo", upload.single("logo"), uploadCompanyLogo);
+router.post("/companies/my/logo", upload.single("logo"), uploadCompanyLogo);
 
-router.get("/me/dashboard", getCompanyDashboard);
+router.get("/companies/my/dashboard", getCompanyDashboard);
 
 export default router;
