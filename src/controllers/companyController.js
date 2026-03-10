@@ -6,6 +6,9 @@ import Interview from "../models/Interview.js";
 
 import { uploadBufferToCloudinary } from "../utils/uploadToCloudinary.js";
 
+/* ======================================
+   COMPANY: Get Company Profile
+====================================== */
 export const getMyCompanyProfile = asyncHandler(async (req, res) => {
   const company = await Company.findOne({ userId: req.user._id }).populate(
     "userId",
@@ -20,6 +23,9 @@ export const getMyCompanyProfile = asyncHandler(async (req, res) => {
   res.json({ success: true, company });
 });
 
+/* ======================================
+   COMPANY: Update Company Profile
+====================================== */
 export const updateMyCompanyProfile = asyncHandler(async (req, res) => {
   const company = await Company.findOne({ userId: req.user._id });
 
@@ -36,16 +42,22 @@ export const updateMyCompanyProfile = asyncHandler(async (req, res) => {
   if (industry !== undefined) company.industry = industry;
   if (location !== undefined) company.location = location;
 
-  // contacts can be array
   if (contacts !== undefined) {
     company.contacts = Array.isArray(contacts) ? contacts : [];
   }
 
   await company.save();
 
-  res.json({ success: true, message: "Company updated", company });
+  res.json({
+    success: true,
+    message: "Company updated",
+    company,
+  });
 });
 
+/* ======================================
+   COMPANY: Upload Company Logo
+====================================== */
 export const uploadCompanyLogo = asyncHandler(async (req, res) => {
   if (!req.file) {
     res.status(400);
@@ -75,6 +87,9 @@ export const uploadCompanyLogo = asyncHandler(async (req, res) => {
   });
 });
 
+/* ======================================
+   COMPANY: Dashboard
+====================================== */
 export const getCompanyDashboard = asyncHandler(async (req, res) => {
   const company = await Company.findOne({ userId: req.user._id });
 
@@ -108,5 +123,68 @@ export const getCompanyDashboard = asyncHandler(async (req, res) => {
       shortlisted,
       upcomingInterviews: interviews,
     },
+  });
+});
+
+/* ======================================
+   COMPANY: Update Application Status
+====================================== */
+export const updateApplicationStatus = asyncHandler(async (req, res) => {
+  const { status } = req.body;
+
+  const company = await Company.findOne({ userId: req.user._id });
+
+  if (!company) {
+    res.status(404);
+    throw new Error("Company profile not found");
+  }
+
+  const application = await Application.findById(req.params.applicationId);
+
+  if (!application) {
+    res.status(404);
+    throw new Error("Application not found");
+  }
+
+  // Security check
+  if (application.companyId.toString() !== company._id.toString()) {
+    res.status(403);
+    throw new Error("Not authorized to update this application");
+  }
+
+  application.status = status;
+  await application.save();
+
+  res.json({
+    success: true,
+    message: "Application status updated",
+    application,
+  });
+});
+
+/* ======================================
+   COMPANY: View Applicants for a Job
+====================================== */
+export const getApplicantsForJob = asyncHandler(async (req, res) => {
+  const company = await Company.findOne({ userId: req.user._id });
+
+  if (!company) {
+    res.status(404);
+    throw new Error("Company profile not found");
+  }
+
+  const jobId = req.params.jobId;
+
+  const applications = await Application.find({
+    jobId,
+    companyId: company._id,
+  })
+    .populate("studentId", "name email")
+    .sort({ createdAt: -1 });
+
+  res.json({
+    success: true,
+    count: applications.length,
+    applications,
   });
 });
