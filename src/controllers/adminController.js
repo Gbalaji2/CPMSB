@@ -20,6 +20,7 @@ export const uploadMiddleware = upload.single("file");
    ADMIN: System Overview
 ================================ */
 export const getAdminOverview = asyncHandler(async (req, res) => {
+
   const totalUsers = await User.countDocuments();
   const totalStudents = await User.countDocuments({ role: "student" });
   const totalCompanies = await User.countDocuments({ role: "company" });
@@ -39,37 +40,54 @@ export const getAdminOverview = asyncHandler(async (req, res) => {
       totalJobs,
       openJobs,
       totalApplications,
-      totalInterviews,
-    },
+      totalInterviews
+    }
   });
+
 });
+
 
 /* ===============================
    ADMIN: List Students
 ================================ */
 export const listStudents = asyncHandler(async (req, res) => {
+
   const students = await User.find({ role: "student" })
     .select("-password")
     .sort({ createdAt: -1 });
 
-  res.json({ success: true, students });
+  res.json({
+    success: true,
+    count: students.length,
+    students
+  });
+
 });
+
 
 /* ===============================
    ADMIN: List Companies
 ================================ */
 export const listCompanies = asyncHandler(async (req, res) => {
+
   const companies = await Company.find()
     .populate("userId", "name email role isBlocked")
     .sort({ createdAt: -1 });
 
-  res.json({ success: true, companies });
+  res.json({
+    success: true,
+    count: companies.length,
+    companies
+  });
+
 });
+
 
 /* ===============================
    ADMIN: Verify Company
 ================================ */
 export const verifyCompany = asyncHandler(async (req, res) => {
+
   const company = await Company.findById(req.params.companyId);
 
   if (!company) {
@@ -80,13 +98,20 @@ export const verifyCompany = asyncHandler(async (req, res) => {
   company.isVerified = true;
   await company.save();
 
-  res.json({ success: true, message: "Company verified", company });
+  res.json({
+    success: true,
+    message: "Company verified",
+    company
+  });
+
 });
+
 
 /* ===============================
    ADMIN: Block / Unblock User
 ================================ */
 export const toggleBlockUser = asyncHandler(async (req, res) => {
+
   const user = await User.findById(req.params.userId);
 
   if (!user) {
@@ -105,15 +130,18 @@ export const toggleBlockUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      isBlocked: user.isBlocked,
-    },
+      isBlocked: user.isBlocked
+    }
   });
+
 });
+
 
 /* ===============================
    ADMIN: Delete Job
 ================================ */
 export const deleteJobByAdmin = asyncHandler(async (req, res) => {
+
   const job = await Job.findById(req.params.jobId);
 
   if (!job) {
@@ -121,19 +149,24 @@ export const deleteJobByAdmin = asyncHandler(async (req, res) => {
     throw new Error("Job not found");
   }
 
-  // Remove related applications/interviews
   await Application.deleteMany({ jobId: job._id });
   await Interview.deleteMany({ jobId: job._id });
 
   await job.deleteOne();
 
-  res.json({ success: true, message: "Job deleted successfully" });
+  res.json({
+    success: true,
+    message: "Job deleted successfully"
+  });
+
 });
+
 
 /* ===============================
    ADMIN: Import Students via CSV
 ================================ */
 export const importStudentsCSV = asyncHandler(async (req, res) => {
+
   if (!req.file) {
     res.status(400);
     throw new Error("CSV file required");
@@ -141,12 +174,48 @@ export const importStudentsCSV = asyncHandler(async (req, res) => {
 
   const result = await importStudentsFromCSV(req.file.path);
 
-  // Remove uploaded file after processing
   fs.unlinkSync(req.file.path);
 
   res.json({
     success: true,
-    message: "CSV import done",
-    result,
+    message: "CSV import completed",
+    result
   });
+
+});
+
+
+/* ===============================
+   ADMIN: List All Jobs
+================================ */
+export const listJobsAdmin = asyncHandler(async (req, res) => {
+
+  const jobs = await Job.find()
+    .populate("companyId", "name")
+    .sort({ createdAt: -1 });
+
+  res.json({
+    success: true,
+    count: jobs.length,
+    jobs
+  });
+
+});
+
+
+/* ===============================
+   ADMIN: List Placement Drives
+================================ */
+export const listDrivesAdmin = asyncHandler(async (req, res) => {
+
+  const drives = await Job.find()
+    .populate("companyId", "name")
+    .sort({ createdAt: -1 });
+
+  res.json({
+    success: true,
+    count: drives.length,
+    drives
+  });
+
 });
