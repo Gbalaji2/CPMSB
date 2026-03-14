@@ -1,199 +1,453 @@
 # College Placement Management System (CPMS) - Backend
 
-This is the **backend** for the College Placement Management System (CPMS), built with **Node.js**, **Express**, and **MongoDB**. It handles authentication, user management, company and job management, applications, interviews, and analytics.
+This is the backend for the **College Placement Management System (CPMS)** built using **Node.js, Express, and MongoDB**.
+It manages authentication, student profiles, company job postings, applications, interviews, and analytics for college placement drives.
 
 ---
 
-## Table of Contents
+# Table of Contents
 
-- [Features](#features)  
-- [Technologies](#technologies)  
-- [Folder Structure](#folder-structure)  
-- [Installation](#installation)  
-- [Environment Variables](#environment-variables)  
-- [Running the Server](#running-the-server)  
-- [API Overview](#api-overview)  
-- [Socket.IO Integration](#socketio-integration)  
-- [Cron Jobs](#cron-jobs)  
-- [Swagger Documentation](#swagger-documentation)  
-- [Contributing](#contributing)  
-- [License](#license)  
-
----
-
-## Features
-
-- **User Authentication & Authorization**  
-  - JWT-based authentication for students, companies, and admin users.  
-  - Role-based access control.  
-
-- **Student Management**  
-  - Profiles with CGPA, department, and year.  
-  - Import students via CSV.  
-
-- **Company Management**  
-  - Create and manage company profiles.  
-  - Upload company logos.  
-  - Verification by admin.  
-
-- **Job Management**  
-  - Create jobs with eligibility criteria.  
-  - CRUD operations for jobs.  
-  - Open/closed status tracking.  
-
-- **Application Management**  
-  - Students can apply for jobs.  
-  - Track application status: shortlisted, rejected, etc.  
-
-- **Interview Management**  
-  - Schedule interviews with virtual or in-person formats.  
-  - Reminder notifications via Socket.IO.  
-  - Agora integration for virtual interviews.  
-
-- **Admin Analytics**  
-  - Jobs per company, applications per job, student leaderboard.  
-  - User and company statistics.  
-
-- **Notifications**  
-  - Real-time interview reminders via Socket.IO.  
-
-- **Swagger API Documentation**  
+* Features
+* Technologies
+* Folder Structure
+* Installation
+* Environment Variables
+* Running the Server
+* Sample Credentials
+* API Overview
+* Socket.IO Integration
+* Cron Jobs
+* Swagger Documentation
+* Contributing
+* License
 
 ---
 
-## Technologies
+# Features
 
-- **Node.js** & **Express**  
-- **MongoDB** & **Mongoose**  
-- **JWT** for authentication  
-- **Socket.IO** for real-time notifications  
-- **Cloudinary** for file uploads (logos, images)  
-- **Cron Jobs** (`node-cron`) for reminders  
-- **Swagger** for API documentation  
-- **Multer** for file uploads  
+## User Authentication & Authorization
 
----
+* JWT-based authentication
+* Role-based access control
+* Roles:
 
-## Folder Structure
-src/
-├── config/ # DB, Cloudinary, Socket configurations
-├── controllers/ # Route controllers
-├── cron/ # Cron jobs (e.g., interview reminders)
-├── models/ # MongoDB models (User, Company, Job, Application, Interview)
-├── routes/ # Express routes
-├── utils/ # Utility functions (asyncHandler, CSV import, email, swagger setup)
-├── validators/ # Input validation using Joi
-├── app.js # Express app setup
-└── server.js # Entry point (HTTP server + Socket.IO + Cron jobs)
-
+  * Admin
+  * Student
+  * Company
 
 ---
 
-## Installation
+## Student Management
 
-1. Clone the repository:
+* Student profile with:
 
-```bash
+  * CGPA
+  * Department
+  * Graduation year
+* CSV import for bulk student creation
+
+---
+
+## Company Management
+
+* Company profile creation
+* Company logo upload
+* Admin verification system
+
+---
+
+## Job Management
+
+* Create jobs with eligibility criteria
+* Job CRUD operations
+* Open / closed job status
+
+---
+
+## Application Management
+
+Students can:
+
+* Apply to jobs
+* Track application status
+* View shortlisted / rejected results
+
+---
+
+## Interview Management
+
+* Schedule interviews
+* Support:
+
+  * Virtual interviews
+  * In-person interviews
+* Agora integration for virtual interviews
+* Real-time reminders
+
+---
+
+## Admin Analytics
+
+Admin dashboard provides:
+
+* Jobs per company
+* Applications per job
+* Student placement leaderboard
+* Overall placement statistics
+
+---
+
+## Real-Time Notifications
+
+Using **Socket.IO**
+
+* Interview reminders
+* Status updates
+* Notification rooms
+
+---
+
+## Swagger API Documentation
+
+Interactive API testing using Swagger.
+
+---
+
+# Technologies
+
+Backend
+
+* Node.js
+* Express.js
+
+Database
+
+* MongoDB
+* Mongoose
+
+Authentication
+
+* JWT (JSON Web Tokens)
+
+Real-time communication
+
+* Socket.IO
+
+File Upload
+
+* Multer
+* Cloudinary
+
+Scheduling
+
+* node-cron
+
+API Documentation
+
+* Swagger
+
+Security
+
+* Helmet
+* Rate limiting
+* CORS
+
+---
+
+# Folder Structure
+
+```
+src
+├── config/          # Database, Cloudinary, Socket configuration
+├── controllers/     # Business logic
+├── cron/            # Cron jobs (interview reminders)
+├── middleware/      # Auth, role, error middleware
+├── models/          # MongoDB models
+├── routes/          # Express routes
+├── utils/           # Helper utilities
+├── validators/      # Joi validation schemas
+├── app.js           # Express app configuration
+└── server.js        # Server entry point
+```
+
+---
+
+# Installation
+
+Clone the repository
+
+```
 git clone https://github.com/your-username/your-repo.git
 cd your-repo
+```
 
-Install dependencies:
+Install dependencies
 
+```
 npm install
+```
 
-Create a .env file in the root directory and add the following variables:
+---
 
+# Environment Variables
+
+Create `.env` file in root directory.
+
+Example:
+
+```
 PORT=5000
-MONGO_URI=<your_mongodb_uri>
-ACCESS_TOKEN_SECRET=<jwt_secret>
-CLOUDINARY_CLOUD_NAME=<cloud_name>
-CLOUDINARY_API_KEY=<api_key>
-CLOUDINARY_API_SECRET=<api_secret>
-EMAIL_SERVICE=<email_service>
-EMAIL_USER=<email_user>
-EMAIL_PASSWORD=<email_password>
-AGORA_APP_ID=<agora_app_id>
-AGORA_APP_CERTIFICATE=<agora_app_certificate>
 
-Important: Do not commit .env to GitHub. Add it to .gitignore.
+MONGO_URI=your_mongodb_connection
 
-Running the Server
+ACCESS_TOKEN_SECRET=your_jwt_secret
 
-Development mode (with auto-restart):
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 
+EMAIL_SERVICE=gmail
+EMAIL_USER=your_email
+EMAIL_PASSWORD=your_email_password
+
+AGORA_APP_ID=your_agora_id
+AGORA_APP_CERTIFICATE=your_agora_certificate
+```
+
+⚠️ Do **not commit `.env` to GitHub**.
+
+Add it to `.gitignore`.
+
+---
+
+# Running the Server
+
+Development mode
+
+```
 npm run dev
+```
 
-**Production mode:**
+Production mode
 
+```
 npm start
+```
 
-Server runs on http://localhost:5000 by default.
+Server runs at:
 
-**API Overview**
+```
+http://localhost:5000
+```
 
-Auth Routes: /api/auth
+---
 
-Register/Login for students, companies, admin.
+# Sample Credentials
 
-User Routes: /api/users
+These credentials can be used for testing the application.
 
-Get profile, update profile, admin management.
+## Admin
 
-Company Routes: /api/companies
+Email
 
-CRUD for company profiles, logo upload, dashboard stats.
+```
+admin@test.com
+```
 
-Job Routes: /api/jobs
+Password
 
-CRUD jobs, list jobs, filter by eligibility.
+```
+admin123
+```
 
-Application Routes: /api/applications
+---
 
-Apply to jobs, track status, shortlist.
+## Student
 
-Interview Routes: /api/interviews
+Email
 
-Schedule, list, reminders, and virtual meeting links.
+```
+student@test.com
+```
 
-Admin Routes: /api/admin
+Password
 
-Analytics, user & company management, CSV import.
+```
+student123
+```
 
-Socket.IO Integration
+---
 
-Real-time notifications using Socket.IO.
+## Company
 
-Students join a room user_<studentId> for interview reminders.
+Email
 
-Companies/admin join role_<role> rooms.
+```
+company@test.com
+```
 
-Example event:
+Password
 
+```
+company123
+```
+
+---
+
+# API Base URL
+
+```
+http://localhost:5000/api
+```
+
+---
+
+# API Overview
+
+## Auth Routes
+
+```
+/api/auth
+```
+
+Endpoints
+
+* Register
+* Login
+* Refresh token
+* Logout
+* Get current user
+
+---
+
+## Student Routes
+
+```
+/api/students
+```
+
+Features
+
+* View profile
+* Update profile
+* View jobs
+* Apply to jobs
+
+---
+
+## Company Routes
+
+```
+/api/companies
+```
+
+Features
+
+* Company profile management
+* Upload logo
+* Company dashboard
+
+---
+
+## Job Routes
+
+```
+/api/jobs
+```
+
+Features
+
+* Create job
+* Update job
+* Delete job
+* View job listings
+
+---
+
+## Application Routes
+
+```
+/api/applications
+```
+
+Features
+
+* Apply to jobs
+* View application status
+* Shortlist / reject candidates
+
+---
+
+## Interview Routes
+
+```
+/api/interviews
+```
+
+Features
+
+* Schedule interviews
+* Manage interview slots
+* Send reminders
+
+---
+
+## Admin Routes
+
+```
+/api/admin
+```
+
+Features
+
+* Manage users
+* Company verification
+* CSV student import
+* Analytics dashboard
+
+---
+
+# Socket.IO Integration
+
+Real-time communication using Socket.IO.
+
+Room structure:
+
+```
+user_<userId>
+role_<role>
+```
+
+Example notification event:
+
+```
 {
   "event": "interviewReminder",
   "message": "Your interview with ABC Corp is at 10:30 AM",
   "interviewId": "637f1c0a..."
 }
-Cron Jobs
+```
 
-Interview Reminder Cron: Runs every minute and sends notifications to students 15 minutes before their interview.
+---
 
-Uses node-cron and Socket.IO.
+# Cron Jobs
 
-Swagger Documentation
+Interview Reminder Cron
 
-API documentation is available via Swagger.
+* Runs every minute
+* Sends notification **15 minutes before interview**
 
-Access at: http://localhost:5000/api-docs
+Uses:
 
-Contributing
+* node-cron
+* Socket.IO
 
-Fork the repository
+---
 
-Create a branch: git checkout -b feature/xyz
+# Swagger Documentation
 
-Commit your changes: git commit -m "Add feature xyz"
+API documentation available at:
 
-Push to branch: git push origin feature/xyz
-
-Create a Pull Request
+```
+http://localhost:5000/api-docs
+```
