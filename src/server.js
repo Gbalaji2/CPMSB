@@ -1,4 +1,3 @@
-// server.js
 // ----------------- GLOBAL ERROR LISTENERS -----------------
 process.on("uncaughtException", (err) => {
   console.error("UNCAUGHT EXCEPTION:", err.stack);
@@ -8,10 +7,11 @@ process.on("unhandledRejection", (reason) => {
   console.error("UNHANDLED REJECTION:", reason.stack || reason);
 });
 
-// ----------------- CONFIG & MODULES -----------------
+// ----------------- CONFIG -----------------
 import dotenv from "dotenv";
 dotenv.config();
 
+// ----------------- MODULES -----------------
 import http from "http";
 import { Server } from "socket.io";
 
@@ -24,38 +24,43 @@ import { setupSwagger } from "./utils/swagger.js";
 import jwt from "jsonwebtoken";
 import User from "./models/User.js";
 
-// Connect to MongoDB
+// ----------------- DATABASE -----------------
 connectDB();
 
-// --- Create default admin if not exists ---
+// ----------------- CREATE DEFAULT ADMIN -----------------
 async function createDefaultAdmin() {
   try {
-    const adminExists = await User.findOne({ email: process.env.ADMIN_EMAIL });
-    if (adminExists) return console.log("Admin already exists");
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@test.com";
+    const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
 
-    // Create admin instance
+    const adminExists = await User.findOne({ email: adminEmail });
+    if (adminExists) {
+      console.log("Admin already exists");
+      return;
+    }
+
     const admin = new User({
       name: "College Admin",
-      email: process.env.ADMIN_EMAIL,
-      password: process.env.ADMIN_PASSWORD, // will be hashed via pre-save hook
+      email: adminEmail,
+      password: adminPassword,
       role: "admin",
       isActive: true,
     });
 
-    await admin.save(); // triggers pre-save hook
+    await admin.save();
     console.log("Default admin created!");
   } catch (err) {
     console.error("Error creating default admin:", err.message);
   }
 }
 
-// Call directly, no asyncHandler
 createDefaultAdmin();
 
+// ----------------- SERVER SETUP -----------------
 const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 
-/* Socket.io setup */
+// ----------------- SOCKET.IO -----------------
 export const io = new Server(server, {
   cors: {
     origin: ["http://localhost:5173"],
@@ -65,7 +70,7 @@ export const io = new Server(server, {
 
 initSocket(io);
 
-/* Socket.io connection: rooms by user ID and role */
+// ----------------- SOCKET CONNECTION -----------------
 io.on("connection", async (socket) => {
   try {
     const token = socket.handshake.auth?.token;
@@ -85,11 +90,48 @@ io.on("connection", async (socket) => {
   }
 });
 
-/* Swagger Setup */
+// ----------------- SWAGGER -----------------
 setupSwagger(app);
 
-/* Cron Jobs */
+// ----------------- CRON JOBS -----------------
 startInterviewReminderCron();
 
-/* Start server */
-server.listen(PORT, () => console.log(`Server running on ${PORT}`));
+function printRoutes(app) {
+  console.log("\nAvailable API Routes:\n");
+
+  if (!app._router) {
+    console.log("No routes registered yet.\n");
+    return;
+  }
+
+  app._router.stack.forEach((middleware) => {
+    if (middleware.route) {
+      const methods = Object.keys(middleware.route.methods)
+        .map((m) => m.toUpperCase())
+        .join(", ");
+
+      console.log(`${methods}  ${middleware.route.path}`);
+    }
+
+    else if (middleware.name === "router" && middleware.handle?.stack) {
+      middleware.handle.stack.forEach((handler) => {
+        if (!handler.route) return;
+
+        const methods = Object.keys(handler.route.methods)
+          .map((m) => m.toUpperCase())
+          .join(", ");
+
+        console.log(`${methods}  ${handler.route.path}`);
+      });
+    }
+  });
+
+  console.log("\n-------------------------\n");
+}
+
+// ----------------- START SERVER -----------------
+server.listen(PORT, () => {
+  console.log(`Server running on ${PORT}`);
+
+  printRoutes(app);
+});

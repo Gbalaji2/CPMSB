@@ -20,18 +20,19 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.use(protect, allowRoles("company"));
 
 /* Company Profile */
-router.get("/companies/my/profile", getMyCompanyProfile);
-router.put("/companies/my/profile", updateMyCompanyProfile);
+router.get("/my/profile", getMyCompanyProfile);
+router.put("/my/profile", updateMyCompanyProfile);
 
 /* Upload Logo */
-router.post("/companies/my/logo", upload.single("logo"), uploadCompanyLogo);
+router.post("/my/logo", upload.single("logo"), uploadCompanyLogo);
 
 /* Dashboard */
-router.get("/companies/my/dashboard", getCompanyDashboard);
+router.get("/my/dashboard", getCompanyDashboard);
 
 /* Update Student Application Status */
 router.patch("/applications/:applicationId/status", updateApplicationStatus);
 
+/* Get Applicants for a Job */
 router.get("/jobs/:jobId/applicants", getApplicantsForJob);
 
 export default router;
