@@ -42,10 +42,15 @@ app.use(cookieParser());
 /* CORS */
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: [
+      "http://localhost:5173",
+      "https://cpmsf.netlify.app"
+    ],
     credentials: true,
   })
 );
+
+app.options("*", cors());
 
 /* Routes */
 app.get("/", (req, res) => res.send("Placement Backend Running"));
