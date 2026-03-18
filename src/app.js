@@ -20,6 +20,7 @@ import adminImportRoutes from "./routes/adminImportRoutes.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
 const app = express();
+app.set("trust proxy", 1);
 
 /* Security + Logs */
 app.use(helmet());
@@ -50,7 +51,7 @@ app.use(
   })
 );
 
-app.options("*", cors());
+app.options("/*", cors());
 
 /* Routes */
 app.get("/", (req, res) => res.send("Placement Backend Running"));
