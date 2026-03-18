@@ -22,7 +22,7 @@ import { startInterviewReminderCron } from "./cron/interviewReminder.js";
 import { setupSwagger } from "./utils/swagger.js";
 
 import jwt from "jsonwebtoken";
-import User from "./models/User.js";
+import User from "./models/userModel.js";
 
 // ----------------- DATABASE -----------------
 connectDB();

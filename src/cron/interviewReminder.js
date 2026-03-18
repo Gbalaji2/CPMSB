@@ -1,6 +1,6 @@
 import cron from "node-cron";
 import Interview from "../models/Interview.js";
-import User from "../models/User.js";
+import User from "../models/userModel.js";
 import { io } from "../server.js"; // We’ll export io from server.js
 import mongoose from "mongoose";
 

@@ -2,7 +2,7 @@ import csvParser from "csv-parser";
 import fs from "fs";
 import bcrypt from "bcryptjs";
 
-import User from "../models/User.js";
+import User from "../models/userModel.js";
 import StudentProfile from "../models/StudentProfile.js";
 
 export const importStudentsFromCSV = async (filePath) => {
