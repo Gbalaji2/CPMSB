@@ -15,11 +15,11 @@ const router = express.Router();
 /* Student only */
 router.use(protect, allowRoles("student"));
 
-router.get("/student/my/profile", getMyStudentProfile);
-router.put("/student/my/profile", updateMyStudentProfile);
+router.get("/profile", getMyStudentProfile);
+router.put("/profile", updateMyStudentProfile);
 
-router.post("/student/my/resume", uploadResume, uploadMyResume);
+router.post("/resume", uploadResume, uploadMyResume);
 
-router.get("/student/my/dashboard", getStudentDashboard);
+router.get("/dashboard", getStudentDashboard);
 
 export default router;
