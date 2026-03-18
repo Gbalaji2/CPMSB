@@ -1,31 +1,38 @@
 // ----------------- GLOBAL ERROR LISTENERS -----------------
 process.on("uncaughtException", (err) => {
   console.error("UNCAUGHT EXCEPTION:", err.stack);
+  process.exit(1); // optional: exit on uncaught exceptions
 });
 
 process.on("unhandledRejection", (reason) => {
   console.error("UNHANDLED REJECTION:", reason.stack || reason);
 });
 
-// ----------------- CONFIG -----------------
+// ----------------- ENV CONFIG -----------------
 import dotenv from "dotenv";
 dotenv.config();
 
 // ----------------- MODULES -----------------
 import http from "http";
 import { Server } from "socket.io";
+import jwt from "jsonwebtoken";
 
 import app from "./app.js";
 import connectDB from "./config/db.js";
 import { initSocket } from "./config/socket.js";
 import { startInterviewReminderCron } from "./cron/interviewReminder.js";
 import { setupSwagger } from "./utils/swagger.js";
-
-import jwt from "jsonwebtoken";
 import User from "./models/userModel.js";
+import cors from "cors";
 
 // ----------------- DATABASE -----------------
 connectDB();
+
+// ----------------- CORS (HTTP) -----------------
+app.use(cors({
+  origin: process.env.CLIENT_URL || "http://localhost:5173",
+  credentials: true
+}));
 
 // ----------------- CREATE DEFAULT ADMIN -----------------
 async function createDefaultAdmin() {
@@ -48,7 +55,7 @@ async function createDefaultAdmin() {
     });
 
     await admin.save();
-    console.log("Default admin created!");
+    console.log("✅ Default admin created!");
   } catch (err) {
     console.error("Error creating default admin:", err.message);
   }
@@ -56,14 +63,14 @@ async function createDefaultAdmin() {
 
 createDefaultAdmin();
 
-// ----------------- SERVER SETUP -----------------
+// ----------------- SERVER -----------------
 const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 
 // ----------------- SOCKET.IO -----------------
 export const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173"],
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true,
   },
 });
@@ -78,14 +85,14 @@ io.on("connection", async (socket) => {
 
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     const user = await User.findById(decoded.id).select("_id name role");
-
     if (!user) return socket.disconnect();
 
     socket.join(`user_${user._id}`);
     socket.join(`role_${user.role}`);
 
-    console.log(`Socket connected: ${user.name} (${user.role})`);
+    console.log(`🟢 Socket connected: ${user.name} (${user.role})`);
   } catch (err) {
+    console.log("Socket connection failed:", err.message);
     socket.disconnect();
   }
 });
@@ -96,6 +103,7 @@ setupSwagger(app);
 // ----------------- CRON JOBS -----------------
 startInterviewReminderCron();
 
+// ----------------- PRINT ROUTES (DEV) -----------------
 function printRoutes(app) {
   console.log("\nAvailable API Routes:\n");
 
@@ -109,18 +117,13 @@ function printRoutes(app) {
       const methods = Object.keys(middleware.route.methods)
         .map((m) => m.toUpperCase())
         .join(", ");
-
       console.log(`${methods}  ${middleware.route.path}`);
-    }
-
-    else if (middleware.name === "router" && middleware.handle?.stack) {
+    } else if (middleware.name === "router" && middleware.handle?.stack) {
       middleware.handle.stack.forEach((handler) => {
         if (!handler.route) return;
-
         const methods = Object.keys(handler.route.methods)
           .map((m) => m.toUpperCase())
           .join(", ");
-
         console.log(`${methods}  ${handler.route.path}`);
       });
     }
@@ -131,7 +134,6 @@ function printRoutes(app) {
 
 // ----------------- START SERVER -----------------
 server.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`);
-
+  console.log(`🚀 Server running on port ${PORT}`);
   printRoutes(app);
 });
