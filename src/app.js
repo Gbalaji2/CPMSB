@@ -51,8 +51,6 @@ app.use(
   })
 );
 
-app.options("/*", cors());
-
 /* Routes */
 app.get("/", (req, res) => res.send("Placement Backend Running"));
 
