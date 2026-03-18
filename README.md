@@ -251,13 +251,13 @@ These credentials can be used for testing the application.
 Email
 
 ```
-admin@test.com
+admin@college.com
 ```
 
 Password
 
 ```
-admin123
+Admin@123
 ```
 
 ---
