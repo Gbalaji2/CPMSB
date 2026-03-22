@@ -188,3 +188,25 @@ export const getApplicantsForJob = asyncHandler(async (req, res) => {
     applications,
   });
 });
+
+/* ======================================
+   COMPANY: Get All Jobs Posted by Company
+====================================== */
+export const getCompanyJobs = asyncHandler(async (req, res) => {
+  const company = await Company.findOne({ userId: req.user._id });
+
+  if (!company) {
+    res.status(404);
+    throw new Error("Company profile not found");
+  }
+
+  const jobs = await Job.find({ companyId: company._id }).sort({
+    createdAt: -1,
+  });
+
+  res.json({
+    success: true,
+    count: jobs.length,
+    jobs,
+  });
+});

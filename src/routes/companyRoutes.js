@@ -2,6 +2,7 @@ import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
 import { allowRoles } from "../middleware/roleMiddleware.js";
 import multer from "multer";
+import { getCompanyJobs } from "../controllers/companyController.js";
 
 import {
   getMyCompanyProfile,
@@ -34,5 +35,6 @@ router.patch("/applications/:applicationId/status", updateApplicationStatus);
 
 /* Get Applicants for a Job */
 router.get("/jobs/:jobId/applicants", getApplicantsForJob);
+router.get("/jobs", getCompanyJobs);
 
 export default router;
