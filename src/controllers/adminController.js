@@ -88,24 +88,46 @@ export const listCompanies = asyncHandler(async (req, res) => {
 ================================ */
 export const verifyCompany = asyncHandler(async (req, res) => {
 
-  const company = await Company.findById(req.params.companyId);
+  const company = await Company.findById(req.params.id);
 
   if (!company) {
     res.status(404);
     throw new Error("Company not found");
   }
 
-  company.isVerified = true;
+  company.isApproved = true;
   await company.save();
 
   res.json({
     success: true,
-    message: "Company verified",
+    message: "Company approved",
     company
   });
 
 });
 
+/* ===============================
+   ADMIN: Reject Company
+================================ */
+export const rejectCompany = asyncHandler(async (req, res) => {
+
+  const company = await Company.findById(req.params.id);
+
+  if (!company) {
+    res.status(404);
+    throw new Error("Company not found");
+  }
+
+  company.isApproved = false;
+  await company.save();
+
+  res.json({
+    success: true,
+    message: "Company rejected",
+    company
+  });
+
+});
 
 /* ===============================
    ADMIN: Block / Unblock User

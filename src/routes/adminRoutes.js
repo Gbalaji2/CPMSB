@@ -9,6 +9,7 @@ import {
   listJobsAdmin,
   listDrivesAdmin,
   verifyCompany,
+  rejectCompany,
   toggleBlockUser,
   deleteJobByAdmin,
 } from "../controllers/adminController.js";
@@ -27,7 +28,8 @@ router.get("/students", listStudents);
 
 /* Companies */
 router.get("/companies", listCompanies);
-router.patch("/companies/:companyId/verify", verifyCompany);
+router.patch("/companies/:id/approve", verifyCompany);
+router.patch("/companies/:id/reject", rejectCompany);
 
 /* Jobs */
 router.get("/jobs", listJobsAdmin);
