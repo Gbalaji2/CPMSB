@@ -23,16 +23,9 @@ import { initSocket } from "./config/socket.js";
 import { startInterviewReminderCron } from "./cron/interviewReminder.js";
 import { setupSwagger } from "./utils/swagger.js";
 import User from "./models/userModel.js";
-import cors from "cors";
 
 // ----------------- DATABASE -----------------
 connectDB();
-
-// ----------------- CORS (HTTP) -----------------
-app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:5173",
-  credentials: true
-}));
 
 // ----------------- CREATE DEFAULT ADMIN -----------------
 async function createDefaultAdmin() {
